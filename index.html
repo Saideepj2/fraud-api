@@ -1,48 +1,301 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fraud Detection</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    .card h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .card p.subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 1.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    input, select {
+      padding: 9px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color .2s;
+      background: #fafafa;
+    }
+
+    input:focus, select:focus {
+      border-color: #4f46e5;
+      background: white;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 1.2rem;
+      padding: 12px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    button:hover { background: #4338ca; }
+    button:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+    .result {
+      margin-top: 1.2rem;
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .result.fraud {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+    }
+
+    .result.clean {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .result .verdict {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .result .prob {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .error {
+      margin-top: 1rem;
+      padding: .8rem 1rem;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      color: #991b1b;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Fraud Detection App</h2>
+<div class="card">
+  <h1>🔍 Fraud Detection</h1>
+  <p class="subtitle">Enter claim details to check for potential fraud</p>
 
-<label>Amount:</label><br>
-<input id="amount"><br><br>
+  <div class="grid">
 
-<label>Previous Claims:</label><br>
-<input id="claims"><br><br>
+    <div class="field">
+      <label>Insured ZIP Code</label>
+      <input type="number" id="insured_zip" placeholder="e.g. 501" value="501">
+    </div>
 
-<label>Claim Type:</label><br>
-<input id="type"><br><br>
+    <div class="field">
+      <label>Customer Age</label>
+      <input type="number" id="customer_age" placeholder="e.g. 35" value="35">
+    </div>
 
-<button onclick="predict()">Check Fraud</button>
+    <div class="field">
+      <label>Vehicle Age (years)</label>
+      <input type="number" id="vehicle_age" placeholder="e.g. 5" value="5">
+    </div>
 
-<p id="result"></p>
+    <div class="field">
+      <label>Claim Delay (days)</label>
+      <input type="number" id="claim_delay_days" placeholder="e.g. 10" value="10">
+    </div>
+
+    <div class="field">
+      <label>Total Claim Amount ($)</label>
+      <input type="number" id="total_claim_amount" placeholder="e.g. 45000" value="45000">
+    </div>
+
+    <div class="field">
+      <label>Auto Make</label>
+      <select id="auto_make">
+        <option>Toyota</option>
+        <option>Honda</option>
+        <option>Ford</option>
+        <option>BMW</option>
+        <option>Mercedes</option>
+        <option>Chevrolet</option>
+        <option>Nissan</option>
+        <option>Audi</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Incident Type</label>
+      <select id="incident_type">
+        <option>Single Vehicle Collision</option>
+        <option>Multi-vehicle Collision</option>
+        <option>Vehicle Theft</option>
+        <option>Parked Car</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Collision Type</label>
+      <select id="collision_type">
+        <option>Front Collision</option>
+        <option>Rear Collision</option>
+        <option>Side Collision</option>
+        <option>NA</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Incident Severity</label>
+      <select id="incident_severity">
+        <option>Minor Damage</option>
+        <option>Major Damage</option>
+        <option>Total Loss</option>
+        <option>Trivial Damage</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Incident State</label>
+      <select id="incident_state">
+        <option>NY</option>
+        <option>CA</option>
+        <option>TX</option>
+        <option>FL</option>
+        <option>OH</option>
+        <option>SC</option>
+        <option>WV</option>
+        <option>VA</option>
+        <option>NC</option>
+        <option>PA</option>
+      </select>
+    </div>
+
+  </div>
+
+  <button onclick="predict()" id="btn">Check for Fraud</button>
+
+  <div class="error" id="error"></div>
+
+  <div class="result" id="result">
+    <div class="verdict" id="verdict"></div>
+    <div class="prob" id="prob"></div>
+  </div>
+</div>
 
 <script>
-    console.log("JS LOADED");
-    function predict() {
-    fetch("http://127.0.0.1:8000/predict", {
+  const API_URL = "https://fraud-api-xtf3.onrender.com";
+
+  async function predict() {
+    const btn = document.getElementById("btn");
+    const resultBox = document.getElementById("result");
+    const errorBox = document.getElementById("error");
+
+    // Reset
+    resultBox.style.display = "none";
+    errorBox.style.display = "none";
+    btn.disabled = true;
+    btn.textContent = "Checking...";
+
+    const payload = {
+      insured_zip:        parseInt(document.getElementById("insured_zip").value),
+      auto_make:          document.getElementById("auto_make").value,
+      incident_type:      document.getElementById("incident_type").value,
+      collision_type:     document.getElementById("collision_type").value,
+      incident_severity:  document.getElementById("incident_severity").value,
+      incident_state:     document.getElementById("incident_state").value,
+      total_claim_amount: parseFloat(document.getElementById("total_claim_amount").value),
+      claim_delay_days:   parseInt(document.getElementById("claim_delay_days").value),
+      customer_age:       parseInt(document.getElementById("customer_age").value),
+      vehicle_age:        parseInt(document.getElementById("vehicle_age").value)
+    };
+
+    try {
+      const response = await fetch(`${API_URL}/predict`, {
         method: "POST",
-        headers: {
-        "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-        amount: parseFloat(document.getElementById("amount").value),
-        previous_claims: parseInt(document.getElementById("claims").value),
-        claim_type: document.getElementById("type").value
-        })
-    })
-    .then(response =>  {
-        console.log(response);
-        return response.json();
-    })
-    .then(data => {
-        document.getElementById("result").innerText =
-        "Fraud: " + data.is_fraud + " | Probability: " + data.fraud_probability;
-    });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+      const data = await response.json();
+      const isFraud = data.fraud_prediction === 1;
+      const prob = (data.fraud_probability * 100).toFixed(1);
+
+      resultBox.className = `result ${isFraud ? "fraud" : "clean"}`;
+      document.getElementById("verdict").textContent = isFraud
+        ? "⚠️ Likely Fraudulent"
+        : "✅ Likely Legitimate";
+      document.getElementById("prob").textContent =
+        `Fraud probability: ${prob}%`;
+      resultBox.style.display = "block";
+
+    } catch (err) {
+      errorBox.textContent = "Error: " + err.message;
+      errorBox.style.display = "block";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Check for Fraud";
     }
+  }
 </script>
 
 </body>
