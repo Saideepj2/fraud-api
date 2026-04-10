@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pickle
@@ -33,9 +34,10 @@ class Claim(BaseModel):
     customer_age: int
     vehicle_age: int
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def home():
-    return {"message": "Fraud Detection API running"}
+    with open("index.html", "r") as f:
+        return f.read()
 
 @app.post("/predict")
 def predict(data: Claim):
