@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.vscode/
+*.ipynb
+data.csv
+data-syn.csv
+.env
+*.pkl
+.DS_Store
+requiremnets.txt

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fraud Detection</title>
+</head>
+<body>
+
+<h2>Fraud Detection App</h2>
+
+<label>Amount:</label><br>
+<input id="amount"><br><br>
+
+<label>Previous Claims:</label><br>
+<input id="claims"><br><br>
+
+<label>Claim Type:</label><br>
+<input id="type"><br><br>
+
+<button onclick="predict()">Check Fraud</button>
+
+<p id="result"></p>
+
+<script>
+    console.log("JS LOADED");
+    function predict() {
+    fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+        amount: parseFloat(document.getElementById("amount").value),
+        previous_claims: parseInt(document.getElementById("claims").value),
+        claim_type: document.getElementById("type").value
+        })
+    })
+    .then(response =>  {
+        console.log(response);
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById("result").innerText =
+        "Fraud: " + data.is_fraud + " | Probability: " + data.fraud_probability;
+    });
+    }
+</script>
+
+</body>
+</html>
